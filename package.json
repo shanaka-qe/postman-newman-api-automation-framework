@@ -1,0 +1,38 @@
+{
+  "name": "postman-api-automation-framework",
+  "version": "1.0.0",
+  "description": "Enterprise-grade API automation framework using Postman + Newman with CI/CD integration",
+  "main": "index.js",
+  "scripts": {
+    "test": "newman run collections/user_management.postman_collection.json -e environments/dev.postman_environment.json",
+    "test:users": "newman run collections/user_management.postman_collection.json -e environments/dev.postman_environment.json -d data/users_data.json -r cli,html,junit --reporter-html-export reports/users-report.html --reporter-junit-export reports/users-junit.xml",
+    "test:orders": "newman run collections/orders_api.postman_collection.json -e environments/dev.postman_environment.json -d data/orders_data.csv -r cli,html,junit --reporter-html-export reports/orders-report.html --reporter-junit-export reports/orders-junit.xml",
+    "test:all": "npm run test:users && npm run test:orders",
+    "test:dev": "newman run collections/user_management.postman_collection.json -e environments/dev.postman_environment.json -r cli,html",
+    "test:qa": "newman run collections/user_management.postman_collection.json -e environments/qa.postman_environment.json -r cli,html",
+    "test:prod": "newman run collections/user_management.postman_collection.json -e environments/prod.postman_environment.json -r cli,html",
+    "clean:reports": "rm -rf reports/*.html reports/*.xml reports/allure-*"
+  },
+  "keywords": [
+    "postman",
+    "newman",
+    "api-testing",
+    "automation",
+    "ci-cd",
+    "jenkins"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "newman": "^6.1.1",
+    "newman-reporter-html": "^1.0.5",
+    "newman-reporter-htmlextra": "^1.23.1",
+    "newman-reporter-junit": "^1.1.1",
+    "newman-reporter-allure": "^1.2.0"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}
+

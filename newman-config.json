@@ -1,0 +1,27 @@
+{
+  "bail": false,
+  "color": "on",
+  "delayRequest": 0,
+  "ignoreRedirects": false,
+  "insecure": false,
+  "timeout": 30000,
+  "timeoutRequest": 10000,
+  "timeoutScript": 5000,
+  "reporters": ["cli", "html", "junit"],
+  "reporter": {
+    "html": {
+      "export": "./reports/newman-report.html",
+      "template": null
+    },
+    "junit": {
+      "export": "./reports/newman-report.xml"
+    }
+  },
+  "verbose": false,
+  "bail": {
+    "folder": false,
+    "failure": false
+  },
+  "suppressExitCode": false
+}
+

@@ -1,0 +1,45 @@
+# Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Reports
+reports/*.html
+reports/*.xml
+reports/allure-*
+reports/*.json
+
+# Environment files with secrets (keep templates only)
+*.env
+.env.local
+.env.*.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Test results
+test-results/
+coverage/
+
+# Jenkins workspace
+.jenkins/
+
+# OS files
+Thumbs.db
+
