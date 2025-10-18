@@ -1,0 +1,516 @@
+{
+  "info": {
+    "name": "User Management API",
+    "description": "Complete user management API test collection with CRUD operations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level pre-request script",
+          "// This runs before every request in the collection",
+          "",
+          "// Log the request details",
+          "console.log('='.repeat(60));",
+          "console.log(`Executing: ${pm.info.requestName}`);",
+          "console.log(`Environment: ${pm.environment.get('environment')}`);",
+          "console.log(`Base URL: ${pm.environment.get('base_url')}`);",
+          "console.log('='.repeat(60));",
+          "",
+          "// Set timestamp for request tracking",
+          "pm.collectionVariables.set('request_timestamp', new Date().toISOString());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level test script",
+          "// This runs after every request in the collection",
+          "",
+          "// Log response details",
+          "console.log(`Response Status: ${pm.response.code}`);",
+          "console.log(`Response Time: ${pm.response.responseTime}ms`);",
+          "",
+          "// Basic health checks for all requests",
+          "pm.test('Response time is acceptable', function() {",
+          "    const maxTime = parseInt(pm.environment.get('timeout'));",
+          "    pm.expect(pm.response.responseTime).to.be.below(maxTime);",
+          "});",
+          "",
+          "pm.test('Response has valid headers', function() {",
+          "    pm.response.to.have.header('Content-Type');",
+          "});"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Parse response body",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "// Validate successful login",
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has auth token', function() {",
+                  "    pm.expect(jsonData).to.have.property('token');",
+                  "    pm.expect(jsonData.token).to.not.be.empty;",
+                  "});",
+                  "",
+                  "pm.test('Response has user data', function() {",
+                  "    pm.expect(jsonData).to.have.property('user');",
+                  "    pm.expect(jsonData.user).to.have.property('id');",
+                  "    pm.expect(jsonData.user).to.have.property('email');",
+                  "});",
+                  "",
+                  "// Store token for subsequent requests",
+                  "if (jsonData.token) {",
+                  "    pm.environment.set('auth_token', jsonData.token);",
+                  "    console.log('✓ Auth token stored in environment');",
+                  "}",
+                  "",
+                  "// Store user ID for later use",
+                  "if (jsonData.user && jsonData.user.id) {",
+                  "    pm.environment.set('user_id', jsonData.user.id);",
+                  "    console.log('✓ User ID stored in environment');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "auth", "login"]
+            },
+            "description": "Authenticates user and returns JWT token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User CRUD Operations",
+      "item": [
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Load test data if running with data file",
+                  "if (pm.iterationData.has('username')) {",
+                  "    pm.collectionVariables.set('test_username', pm.iterationData.get('username'));",
+                  "    pm.collectionVariables.set('test_email', pm.iterationData.get('email'));",
+                  "    pm.collectionVariables.set('test_firstName', pm.iterationData.get('firstName'));",
+                  "    pm.collectionVariables.set('test_lastName', pm.iterationData.get('lastName'));",
+                  "    console.log('✓ Test data loaded from data file');",
+                  "} else {",
+                  "    // Generate random test data",
+                  "    const randomId = Date.now();",
+                  "    pm.collectionVariables.set('test_username', `user_${randomId}`);",
+                  "    pm.collectionVariables.set('test_email', `user${randomId}@test.com`);",
+                  "    pm.collectionVariables.set('test_firstName', 'Test');",
+                  "    pm.collectionVariables.set('test_lastName', 'User');",
+                  "    console.log('✓ Random test data generated');",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Parse response body",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "// Validate successful creation",
+                  "pm.test('Status code is 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has user ID', function() {",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData.id).to.not.be.empty;",
+                  "});",
+                  "",
+                  "pm.test('User data matches request', function() {",
+                  "    pm.expect(jsonData.username).to.eql(pm.collectionVariables.get('test_username'));",
+                  "    pm.expect(jsonData.email).to.eql(pm.collectionVariables.get('test_email'));",
+                  "});",
+                  "",
+                  "pm.test('Password is not exposed', function() {",
+                  "    pm.expect(jsonData).to.not.have.property('password');",
+                  "});",
+                  "",
+                  "// Store created user ID",
+                  "if (jsonData.id) {",
+                  "    pm.environment.set('created_user_id', jsonData.id);",
+                  "    console.log(`✓ Created user ID: ${jsonData.id}`);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{test_username}}\",\n  \"email\": \"{{test_email}}\",\n  \"password\": \"{{password}}\",\n  \"firstName\": \"{{test_firstName}}\",\n  \"lastName\": \"{{test_lastName}}\",\n  \"phone\": \"{{phone}}\",\n  \"role\": \"{{role}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "users"]
+            },
+            "description": "Creates a new user in the system"
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Parse response body",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "// Validate successful retrieval",
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has all user fields', function() {",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('username');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData).to.have.property('firstName');",
+                  "    pm.expect(jsonData).to.have.property('lastName');",
+                  "});",
+                  "",
+                  "pm.test('User ID matches request', function() {",
+                  "    const requestedId = pm.environment.get('created_user_id');",
+                  "    pm.expect(jsonData.id).to.eql(requestedId);",
+                  "});",
+                  "",
+                  "pm.test('Email format is valid', function() {",
+                  "    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;",
+                  "    pm.expect(jsonData.email).to.match(emailRegex);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/users/{{created_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "users", "{{created_user_id}}"]
+            },
+            "description": "Retrieves user details by ID"
+          }
+        },
+        {
+          "name": "Get All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Parse response body",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "// Validate successful retrieval",
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function() {",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Array contains user objects', function() {",
+                  "    if (jsonData.length > 0) {",
+                  "        pm.expect(jsonData[0]).to.have.property('id');",
+                  "        pm.expect(jsonData[0]).to.have.property('username');",
+                  "        pm.expect(jsonData[0]).to.have.property('email');",
+                  "    }",
+                  "});",
+                  "",
+                  "// Store count for reporting",
+                  "pm.collectionVariables.set('total_users', jsonData.length);",
+                  "console.log(`✓ Total users: ${jsonData.length}`);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/users?page=1&limit=100",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "100"
+                }
+              ]
+            },
+            "description": "Retrieves all users with pagination"
+          }
+        },
+        {
+          "name": "Update User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Parse response body",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "// Validate successful update",
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User data was updated', function() {",
+                  "    pm.expect(jsonData).to.have.property('firstName');",
+                  "    pm.expect(jsonData.firstName).to.eql('Updated');",
+                  "});",
+                  "",
+                  "pm.test('Updated timestamp exists', function() {",
+                  "    pm.expect(jsonData).to.have.property('updatedAt');",
+                  "    pm.expect(jsonData.updatedAt).to.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"Name\",\n  \"phone\": \"+1-555-9999\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/users/{{created_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "users", "{{created_user_id}}"]
+            },
+            "description": "Updates an existing user's information"
+          }
+        },
+        {
+          "name": "Delete User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Validate successful deletion",
+                  "pm.test('Status code is 204 No Content', function() {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test('Response body is empty', function() {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});",
+                  "",
+                  "// Clean up environment variable",
+                  "pm.environment.unset('created_user_id');",
+                  "console.log('✓ User deleted successfully');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/users/{{created_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "users", "{{created_user_id}}"]
+            },
+            "description": "Deletes a user from the system"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Negative Test Cases",
+      "item": [
+        {
+          "name": "Get Non-Existent User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Validate error response",
+                  "pm.test('Status code is 404 Not Found', function() {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Error message is present', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/users/999999999",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "users", "999999999"]
+            },
+            "description": "Attempts to retrieve a non-existent user"
+          }
+        },
+        {
+          "name": "Create User with Invalid Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Validate validation error",
+                  "pm.test('Status code is 400 Bad Request', function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Validation error message is present', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.include('email');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"invalid_user\",\n  \"email\": \"invalid-email-format\",\n  \"password\": \"Test123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "users"]
+            },
+            "description": "Attempts to create user with invalid email format"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "test_username",
+      "value": ""
+    },
+    {
+      "key": "test_email",
+      "value": ""
+    },
+    {
+      "key": "test_firstName",
+      "value": ""
+    },
+    {
+      "key": "test_lastName",
+      "value": ""
+    },
+    {
+      "key": "total_users",
+      "value": "0"
+    },
+    {
+      "key": "request_timestamp",
+      "value": ""
+    }
+  ]
+}
+

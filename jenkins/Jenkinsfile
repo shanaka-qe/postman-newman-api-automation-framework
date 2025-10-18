@@ -1,0 +1,353 @@
+/**
+ * Jenkins Pipeline for Postman API Automation Framework
+ * This pipeline automates API testing using Newman with multiple stages
+ * 
+ * Pipeline Stages:
+ * 1. Checkout - Clone repository from GitHub
+ * 2. Setup - Install Node.js dependencies (Newman)
+ * 3. Run Tests - Execute Postman collections with Newman
+ * 4. Publish Reports - Archive and display test reports
+ * 5. Notifications - Send alerts on success/failure
+ */
+
+pipeline {
+    // Define where this pipeline should run
+    agent any
+    
+    // Define environment variables available throughout the pipeline
+    environment {
+        // Newman and Node.js configuration
+        NODE_VERSION = '18'
+        NEWMAN_VERSION = '6.1.1'
+        
+        // Test environment selection (can be overridden via Jenkins parameters)
+        TEST_ENV = "${params.ENVIRONMENT ?: 'dev'}"
+        
+        // Path configurations
+        COLLECTIONS_PATH = 'collections'
+        ENVIRONMENTS_PATH = 'environments'
+        DATA_PATH = 'data'
+        REPORTS_PATH = 'reports'
+        
+        // Report file names (with timestamps for uniqueness)
+        TIMESTAMP = sh(script: "date '+%Y%m%d_%H%M%S'", returnStdout: true).trim()
+        USERS_REPORT = "users-report-${TIMESTAMP}.html"
+        ORDERS_REPORT = "orders-report-${TIMESTAMP}.html"
+        
+        // Newman command options
+        NEWMAN_OPTIONS = '--color off --disable-unicode --reporters cli,html,junit'
+    }
+    
+    // Define pipeline parameters that can be set when triggering a build
+    parameters {
+        // Environment selection dropdown
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['dev', 'qa', 'prod'],
+            description: 'Select the environment to run tests against'
+        )
+        
+        // Test suite selection
+        choice(
+            name: 'TEST_SUITE',
+            choices: ['all', 'users', 'orders', 'smoke'],
+            description: 'Select which test suite to execute'
+        )
+        
+        // Option to skip tests (useful for debugging)
+        booleanParam(
+            name: 'SKIP_TESTS',
+            defaultValue: false,
+            description: 'Skip test execution (for pipeline testing)'
+        )
+        
+        // Option to clean workspace before build
+        booleanParam(
+            name: 'CLEAN_WORKSPACE',
+            defaultValue: false,
+            description: 'Clean workspace before starting'
+        )
+    }
+    
+    // Define stages of the pipeline
+    stages {
+        
+        // STAGE 1: Checkout source code from GitHub
+        stage('Checkout') {
+            steps {
+                script {
+                    echo '========================================='
+                    echo 'Stage 1: Checking out source code'
+                    echo '========================================='
+                    
+                    // Clean workspace if parameter is set
+                    if (params.CLEAN_WORKSPACE) {
+                        echo 'Cleaning workspace...'
+                        deleteDir()
+                    }
+                }
+                
+                // Checkout code from Git repository
+                checkout scm
+                
+                // Display branch and commit information
+                sh '''
+                    echo "Branch: ${GIT_BRANCH}"
+                    echo "Commit: ${GIT_COMMIT}"
+                    git log -1 --pretty=format:"Author: %an%nDate: %ad%nMessage: %s"
+                '''
+            }
+        }
+        
+        // STAGE 2: Setup environment and install dependencies
+        stage('Setup') {
+            steps {
+                script {
+                    echo '========================================='
+                    echo 'Stage 2: Setting up environment'
+                    echo '========================================='
+                }
+                
+                // Install Node.js and npm dependencies
+                sh '''
+                    echo "Node.js version:"
+                    node --version || echo "Node.js not found, will install"
+                    
+                    echo "npm version:"
+                    npm --version || echo "npm not found, will install"
+                    
+                    echo "Installing Newman and reporters..."
+                    npm install newman newman-reporter-html newman-reporter-htmlextra newman-reporter-junit
+                    
+                    echo "Verifying Newman installation:"
+                    npx newman --version
+                    
+                    echo "Creating reports directory..."
+                    mkdir -p ${REPORTS_PATH}
+                '''
+            }
+        }
+        
+        // STAGE 3: Run API tests with Newman
+        stage('Run Tests') {
+            // Skip this stage if SKIP_TESTS parameter is true
+            when {
+                expression { return !params.SKIP_TESTS }
+            }
+            
+            steps {
+                script {
+                    echo '========================================='
+                    echo 'Stage 3: Executing API Tests'
+                    echo '========================================='
+                    echo "Environment: ${TEST_ENV}"
+                    echo "Test Suite: ${params.TEST_SUITE}"
+                }
+                
+                // Execute tests based on TEST_SUITE parameter
+                script {
+                    // Define the environment file path
+                    def envFile = "${ENVIRONMENTS_PATH}/${TEST_ENV}.postman_environment.json"
+                    
+                    // Execute different test suites based on parameter
+                    if (params.TEST_SUITE == 'all' || params.TEST_SUITE == 'users') {
+                        echo 'Running User Management API Tests...'
+                        sh """
+                            npx newman run ${COLLECTIONS_PATH}/user_management.postman_collection.json \\
+                                -e ${envFile} \\
+                                -d ${DATA_PATH}/users_data.json \\
+                                --iteration-count 3 \\
+                                -r cli,html,junit \\
+                                --reporter-html-export ${REPORTS_PATH}/${USERS_REPORT} \\
+                                --reporter-junit-export ${REPORTS_PATH}/users-junit.xml \\
+                                --bail || echo "Some user tests failed"
+                        """
+                    }
+                    
+                    if (params.TEST_SUITE == 'all' || params.TEST_SUITE == 'orders') {
+                        echo 'Running Orders API Tests...'
+                        sh """
+                            npx newman run ${COLLECTIONS_PATH}/orders_api.postman_collection.json \\
+                                -e ${envFile} \\
+                                -d ${DATA_PATH}/orders_data.csv \\
+                                --iteration-count 3 \\
+                                -r cli,html,junit \\
+                                --reporter-html-export ${REPORTS_PATH}/${ORDERS_REPORT} \\
+                                --reporter-junit-export ${REPORTS_PATH}/orders-junit.xml \\
+                                --bail || echo "Some order tests failed"
+                        """
+                    }
+                    
+                    if (params.TEST_SUITE == 'smoke') {
+                        echo 'Running Smoke Tests (first iteration only)...'
+                        sh """
+                            npx newman run ${COLLECTIONS_PATH}/user_management.postman_collection.json \\
+                                -e ${envFile} \\
+                                --iteration-count 1 \\
+                                -r cli,html \\
+                                --reporter-html-export ${REPORTS_PATH}/smoke-${USERS_REPORT}
+                            
+                            npx newman run ${COLLECTIONS_PATH}/orders_api.postman_collection.json \\
+                                -e ${envFile} \\
+                                --iteration-count 1 \\
+                                -r cli,html \\
+                                --reporter-html-export ${REPORTS_PATH}/smoke-${ORDERS_REPORT}
+                        """
+                    }
+                }
+            }
+        }
+        
+        // STAGE 4: Publish test reports
+        stage('Publish Reports') {
+            steps {
+                script {
+                    echo '========================================='
+                    echo 'Stage 4: Publishing Test Reports'
+                    echo '========================================='
+                }
+                
+                // Publish JUnit test results for Jenkins dashboard
+                junit(
+                    testResults: "${REPORTS_PATH}/*-junit.xml",
+                    allowEmptyResults: true,
+                    skipPublishingChecks: false
+                )
+                
+                // Publish HTML reports
+                publishHTML([
+                    reportDir: "${REPORTS_PATH}",
+                    reportFiles: '*.html',
+                    reportName: 'Newman Test Reports',
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    allowMissing: false
+                ])
+                
+                // Archive all reports as artifacts
+                archiveArtifacts(
+                    artifacts: "${REPORTS_PATH}/*",
+                    allowEmptyArchive: true,
+                    fingerprint: true
+                )
+                
+                // Display report locations
+                sh """
+                    echo "Reports generated:"
+                    ls -lh ${REPORTS_PATH}/
+                """
+            }
+        }
+        
+        // STAGE 5: Generate test summary
+        stage('Test Summary') {
+            steps {
+                script {
+                    echo '========================================='
+                    echo 'Stage 5: Generating Test Summary'
+                    echo '========================================='
+                    
+                    // Generate summary from reports
+                    sh '''
+                        echo "Test Execution Summary:"
+                        echo "======================="
+                        echo "Environment: ${TEST_ENV}"
+                        echo "Test Suite: ${TEST_SUITE}"
+                        echo "Timestamp: ${TIMESTAMP}"
+                        echo "Build Number: ${BUILD_NUMBER}"
+                        echo "======================="
+                        
+                        # Count report files
+                        REPORT_COUNT=$(find ${REPORTS_PATH} -name "*.html" | wc -l)
+                        echo "Total HTML Reports: ${REPORT_COUNT}"
+                        
+                        # Display file sizes
+                        du -sh ${REPORTS_PATH}
+                    '''
+                }
+            }
+        }
+    }
+    
+    // Post-build actions (run after all stages complete)
+    post {
+        // Actions to run on successful build
+        success {
+            script {
+                echo '========================================='
+                echo '✅ Pipeline completed successfully!'
+                echo '========================================='
+            }
+            
+            // Send success notification (configure email/Slack here)
+            // emailext(
+            //     subject: "✅ API Tests Passed - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            //     body: """
+            //         <h2>API Test Execution Successful</h2>
+            //         <p><strong>Job:</strong> ${env.JOB_NAME}</p>
+            //         <p><strong>Build:</strong> #${env.BUILD_NUMBER}</p>
+            //         <p><strong>Environment:</strong> ${TEST_ENV}</p>
+            //         <p><strong>Test Suite:</strong> ${params.TEST_SUITE}</p>
+            //         <p><a href="${env.BUILD_URL}">View Build</a></p>
+            //     """,
+            //     to: 'team@example.com',
+            //     mimeType: 'text/html'
+            // )
+        }
+        
+        // Actions to run on failed build
+        failure {
+            script {
+                echo '========================================='
+                echo '❌ Pipeline failed!'
+                echo '========================================='
+            }
+            
+            // Send failure notification
+            // emailext(
+            //     subject: "❌ API Tests Failed - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            //     body: """
+            //         <h2>API Test Execution Failed</h2>
+            //         <p><strong>Job:</strong> ${env.JOB_NAME}</p>
+            //         <p><strong>Build:</strong> #${env.BUILD_NUMBER}</p>
+            //         <p><strong>Environment:</strong> ${TEST_ENV}</p>
+            //         <p><strong>Test Suite:</strong> ${params.TEST_SUITE}</p>
+            //         <p><a href="${env.BUILD_URL}">View Build</a></p>
+            //         <p><a href="${env.BUILD_URL}artifact/${REPORTS_PATH}/">View Reports</a></p>
+            //     """,
+            //     to: 'team@example.com',
+            //     mimeType: 'text/html'
+            // )
+        }
+        
+        // Actions to run on unstable build (tests failed but build succeeded)
+        unstable {
+            script {
+                echo '========================================='
+                echo '⚠️  Pipeline unstable - some tests failed'
+                echo '========================================='
+            }
+        }
+        
+        // Actions to always run regardless of build result
+        always {
+            script {
+                echo '========================================='
+                echo 'Cleaning up temporary files...'
+                echo '========================================='
+            }
+            
+            // Clean up temporary files but keep reports
+            sh '''
+                echo "Workspace size:"
+                du -sh .
+                
+                # Keep reports but clean other temporary files if needed
+                # find . -name "*.tmp" -delete
+            '''
+            
+            echo 'Pipeline execution completed.'
+        }
+    }
+}
+

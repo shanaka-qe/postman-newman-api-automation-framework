@@ -1,0 +1,598 @@
+{
+  "info": {
+    "name": "Orders API",
+    "description": "E-commerce orders API test collection with full order lifecycle",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level pre-request script for Orders API",
+          "",
+          "// Log request execution",
+          "console.log('='.repeat(60));",
+          "console.log(`Executing Order Request: ${pm.info.requestName}`);",
+          "console.log(`Timestamp: ${new Date().toISOString()}`);",
+          "console.log('='.repeat(60));",
+          "",
+          "// Ensure auth token exists",
+          "const authToken = pm.environment.get('auth_token');",
+          "if (!authToken || authToken === '') {",
+          "    console.warn('⚠ Warning: No auth token found. Please authenticate first.');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level test script for Orders API",
+          "",
+          "// Log response summary",
+          "console.log(`Response Status: ${pm.response.code} - ${pm.response.status}`);",
+          "console.log(`Response Time: ${pm.response.responseTime}ms`);",
+          "",
+          "// Global assertion: response time check",
+          "pm.test('Response time is reasonable', function() {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});",
+          "",
+          "// Global assertion: no server errors",
+          "pm.test('No server errors (5xx)', function() {",
+          "    pm.expect(pm.response.code).to.be.below(500);",
+          "});"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Order Creation",
+      "item": [
+        {
+          "name": "Create New Order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Load order data from iteration data (CSV/JSON)",
+                  "if (pm.iterationData.has('customerId')) {",
+                  "    pm.collectionVariables.set('order_customerId', pm.iterationData.get('customerId'));",
+                  "    pm.collectionVariables.set('order_productName', pm.iterationData.get('productName'));",
+                  "    pm.collectionVariables.set('order_quantity', pm.iterationData.get('quantity'));",
+                  "    pm.collectionVariables.set('order_price', pm.iterationData.get('price'));",
+                  "    pm.collectionVariables.set('order_shippingAddress', pm.iterationData.get('shippingAddress'));",
+                  "    pm.collectionVariables.set('order_paymentMethod', pm.iterationData.get('paymentMethod'));",
+                  "    console.log('✓ Order data loaded from data file');",
+                  "} else {",
+                  "    // Generate random order data",
+                  "    pm.collectionVariables.set('order_customerId', `CUST-${Math.floor(Math.random() * 1000)}`);",
+                  "    pm.collectionVariables.set('order_productName', 'Test Product');",
+                  "    pm.collectionVariables.set('order_quantity', '1');",
+                  "    pm.collectionVariables.set('order_price', '99.99');",
+                  "    pm.collectionVariables.set('order_shippingAddress', '123 Test St, Test City');",
+                  "    pm.collectionVariables.set('order_paymentMethod', 'credit_card');",
+                  "    console.log('✓ Random order data generated');",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Parse response body",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "// Validate successful order creation",
+                  "pm.test('Status code is 201 Created', function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has order ID', function() {",
+                  "    pm.expect(jsonData).to.have.property('orderId');",
+                  "    pm.expect(jsonData.orderId).to.not.be.empty;",
+                  "});",
+                  "",
+                  "pm.test('Order has required fields', function() {",
+                  "    pm.expect(jsonData).to.have.property('customerId');",
+                  "    pm.expect(jsonData).to.have.property('productName');",
+                  "    pm.expect(jsonData).to.have.property('quantity');",
+                  "    pm.expect(jsonData).to.have.property('price');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "});",
+                  "",
+                  "pm.test('Order status is pending', function() {",
+                  "    pm.expect(jsonData.status).to.eql('pending');",
+                  "});",
+                  "",
+                  "pm.test('Total amount is calculated correctly', function() {",
+                  "    const expectedTotal = parseFloat(pm.collectionVariables.get('order_price')) * parseInt(pm.collectionVariables.get('order_quantity'));",
+                  "    pm.expect(parseFloat(jsonData.totalAmount)).to.eql(expectedTotal);",
+                  "});",
+                  "",
+                  "pm.test('Order has timestamp', function() {",
+                  "    pm.expect(jsonData).to.have.property('createdAt');",
+                  "    pm.expect(jsonData.createdAt).to.not.be.empty;",
+                  "});",
+                  "",
+                  "// Store order ID for subsequent requests",
+                  "if (jsonData.orderId) {",
+                  "    pm.environment.set('order_id', jsonData.orderId);",
+                  "    console.log(`✓ Created order ID: ${jsonData.orderId}`);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"{{order_customerId}}\",\n  \"productName\": \"{{order_productName}}\",\n  \"quantity\": {{order_quantity}},\n  \"price\": {{order_price}},\n  \"shippingAddress\": \"{{order_shippingAddress}}\",\n  \"paymentMethod\": \"{{order_paymentMethod}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/orders",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "orders"]
+            },
+            "description": "Creates a new order in the system"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order Retrieval",
+      "item": [
+        {
+          "name": "Get Order by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Parse response body",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "// Validate successful retrieval",
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Order ID matches request', function() {",
+                  "    const requestedOrderId = pm.environment.get('order_id');",
+                  "    pm.expect(jsonData.orderId).to.eql(requestedOrderId);",
+                  "});",
+                  "",
+                  "pm.test('Order has complete details', function() {",
+                  "    pm.expect(jsonData).to.have.property('orderId');",
+                  "    pm.expect(jsonData).to.have.property('customerId');",
+                  "    pm.expect(jsonData).to.have.property('productName');",
+                  "    pm.expect(jsonData).to.have.property('quantity');",
+                  "    pm.expect(jsonData).to.have.property('price');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData).to.have.property('totalAmount');",
+                  "    pm.expect(jsonData).to.have.property('createdAt');",
+                  "});",
+                  "",
+                  "pm.test('Quantity is a positive number', function() {",
+                  "    pm.expect(jsonData.quantity).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('Price is a positive number', function() {",
+                  "    pm.expect(parseFloat(jsonData.price)).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/orders/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "orders", "{{order_id}}"]
+            },
+            "description": "Retrieves order details by ID"
+          }
+        },
+        {
+          "name": "Get All Orders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Parse response body",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "// Validate successful retrieval",
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function() {",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Orders have required fields', function() {",
+                  "    if (jsonData.length > 0) {",
+                  "        const firstOrder = jsonData[0];",
+                  "        pm.expect(firstOrder).to.have.property('orderId');",
+                  "        pm.expect(firstOrder).to.have.property('customerId');",
+                  "        pm.expect(firstOrder).to.have.property('status');",
+                  "        pm.expect(firstOrder).to.have.property('totalAmount');",
+                  "    }",
+                  "});",
+                  "",
+                  "// Store total count",
+                  "pm.collectionVariables.set('total_orders', jsonData.length);",
+                  "console.log(`✓ Total orders: ${jsonData.length}`);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/orders?page=1&limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "orders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Retrieves all orders with pagination"
+          }
+        },
+        {
+          "name": "Get Orders by Customer ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Parse response body",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "// Validate successful retrieval",
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function() {",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('All orders belong to specified customer', function() {",
+                  "    const requestedCustomerId = pm.collectionVariables.get('order_customerId');",
+                  "    jsonData.forEach(order => {",
+                  "        pm.expect(order.customerId).to.eql(requestedCustomerId);",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/orders?customerId={{order_customerId}}",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "orders"],
+              "query": [
+                {
+                  "key": "customerId",
+                  "value": "{{order_customerId}}"
+                }
+              ]
+            },
+            "description": "Retrieves all orders for a specific customer"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order Status Management",
+      "item": [
+        {
+          "name": "Update Order Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Parse response body",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "// Validate successful update",
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Order status was updated', function() {",
+                  "    pm.expect(jsonData.status).to.eql('shipped');",
+                  "});",
+                  "",
+                  "pm.test('Updated timestamp exists', function() {",
+                  "    pm.expect(jsonData).to.have.property('updatedAt');",
+                  "    pm.expect(jsonData.updatedAt).to.not.be.empty;",
+                  "});",
+                  "",
+                  "pm.test('Status history is tracked', function() {",
+                  "    if (jsonData.statusHistory) {",
+                  "        pm.expect(jsonData.statusHistory).to.be.an('array');",
+                  "        pm.expect(jsonData.statusHistory.length).to.be.above(0);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"shipped\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/orders/{{order_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "orders", "{{order_id}}", "status"]
+            },
+            "description": "Updates the status of an existing order"
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Parse response body",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "// Validate successful cancellation",
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Order status is cancelled', function() {",
+                  "    pm.expect(jsonData.status).to.eql('cancelled');",
+                  "});",
+                  "",
+                  "pm.test('Cancellation reason is recorded', function() {",
+                  "    pm.expect(jsonData).to.have.property('cancellationReason');",
+                  "});",
+                  "",
+                  "pm.test('Cancelled timestamp exists', function() {",
+                  "    pm.expect(jsonData).to.have.property('cancelledAt');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Customer requested cancellation\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/orders/{{order_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "orders", "{{order_id}}", "cancel"]
+            },
+            "description": "Cancels an existing order"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Negative Test Cases",
+      "item": [
+        {
+          "name": "Get Non-Existent Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Validate error response",
+                  "pm.test('Status code is 404 Not Found', function() {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Error message is present', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.include('not found');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/orders/ORD-INVALID-999",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "orders", "ORD-INVALID-999"]
+            },
+            "description": "Attempts to retrieve a non-existent order"
+          }
+        },
+        {
+          "name": "Create Order with Negative Quantity",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Validate validation error",
+                  "pm.test('Status code is 400 Bad Request', function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Validation error for quantity', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error.toLowerCase()).to.include('quantity');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"CUST-999\",\n  \"productName\": \"Test Product\",\n  \"quantity\": -5,\n  \"price\": 99.99,\n  \"shippingAddress\": \"123 Test St\",\n  \"paymentMethod\": \"credit_card\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/orders",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "orders"]
+            },
+            "description": "Attempts to create order with invalid negative quantity"
+          }
+        },
+        {
+          "name": "Update Order with Invalid Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Validate validation error",
+                  "pm.test('Status code is 400 Bad Request', function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Invalid status error message', function() {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error.toLowerCase()).to.include('status');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"invalid_status_value\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/{{api_version}}/orders/{{order_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["{{api_version}}", "orders", "{{order_id}}", "status"]
+            },
+            "description": "Attempts to update order with invalid status value"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "order_customerId",
+      "value": ""
+    },
+    {
+      "key": "order_productName",
+      "value": ""
+    },
+    {
+      "key": "order_quantity",
+      "value": ""
+    },
+    {
+      "key": "order_price",
+      "value": ""
+    },
+    {
+      "key": "order_shippingAddress",
+      "value": ""
+    },
+    {
+      "key": "order_paymentMethod",
+      "value": ""
+    },
+    {
+      "key": "total_orders",
+      "value": "0"
+    }
+  ]
+}
+
