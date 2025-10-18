@@ -21,14 +21,13 @@
     "ci-cd",
     "jenkins"
   ],
-  "author": "",
+  "author": "Shanaka Fernando <https://www.linkedin.com/in/shanaka-qe/>",
   "license": "MIT",
   "devDependencies": {
-    "newman": "^6.1.1",
+    "newman": "^6.2.1",
     "newman-reporter-html": "^1.0.5",
     "newman-reporter-htmlextra": "^1.23.1",
-    "newman-reporter-junit": "^1.1.1",
-    "newman-reporter-allure": "^1.2.0"
+    "newman-reporter-junitfull": "^1.1.1"
   },
   "engines": {
     "node": ">=14.0.0",

@@ -21,7 +21,7 @@ This is a production ready framework that I used for one of my clients and shari
 - [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [Quick Start](#quick-start)
+- [Quick Start](docs/quick_start.md)
 - [Running Tests](#running-tests)
 - [Framework Components](#framework-components)
 - [CI/CD Integration](#cicd-integration)
@@ -47,6 +47,164 @@ This framework provides a **production-ready, scalable solution** for API test a
 ✅ **Rich Reporting** - HTML, JUnit, and Allure report generation  
 ✅ **Enterprise Security** - Credential management via Jenkins secrets  
 ✅ **Scalable Design** - Easy to extend for microservices architecture
+
+---
+
+## 🏗️ Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           POSTMAN-NEWMAN API AUTOMATION FRAMEWORK               │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   DEVELOPERS    │    │   QA ENGINEERS  │    │   DEVOPS TEAM   │
+│                 │    │                 │    │                 │
+│ • Write Tests   │    │ • Execute Tests │    │ • CI/CD Setup   │
+│ • Create Data   │    │ • Validate APIs │    │ • Monitor Runs  │
+│ • Debug Issues  │    │ • Review Reports│    │ • Manage Envs   │
+└─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
+          │                       │                       │
+          └───────────────────────┼───────────────────────┘
+                                  │
+                    ┌─────────────▼─────────────┐
+                    │      GIT REPOSITORY       │
+                    │  ┌─────────────────────┐  │
+                    │  │   📁 collections/   │  │
+                    │  │   • user_management │  │
+                    │  │   • orders_api      │  │
+                    │  └─────────────────────┘  │
+                    │  ┌─────────────────────┐  │
+                    │  │   🌍 environments/  │  │
+                    │  │   • dev.json        │  │
+                    │  │   • qa.json         │  │
+                    │  │   • prod.json       │  │
+                    │  └─────────────────────┘  │
+                    │  ┌─────────────────────┐  │
+                    │  │   📊 data/          │  │
+                    │  │   • users_data.json │  │
+                    │  │   • orders_data.csv │  │
+                    │  └─────────────────────┘  │
+                    │  ┌─────────────────────┐  │
+                    │  │   🔧 utils/         │  │
+                    │  │   • assertions.js   │  │
+                    │  │   • data_loader.js  │  │
+                    │  │   • env_helper.js   │  │
+                    │  │   • logger.js       │  │
+                    │  └─────────────────────┘  │
+                    └─────────────┬─────────────┘
+                                  │
+                    ┌─────────────▼─────────────┐
+                    │      NEWMAN CLI           │
+                    │  ┌─────────────────────┐  │
+                    │  │   📋 Test Runner    │  │
+                    │  │   • Load Collections│  │
+                    │  │   • Apply Envs      │  │
+                    │  │   • Process Data    │  │
+                    │  │   • Execute Tests   │  │
+                    │  └─────────────────────┘  │
+                    └─────────────┬─────────────┘
+                                  │
+                    ┌─────────────▼─────────────┐
+                    │      API ENDPOINTS        │
+                    │  ┌─────────────────────┐  │
+                    │  │   🔗 Development    │  │
+                    │  │   • api-dev.com     │  │
+                    │  └─────────────────────┘  │
+                    │  ┌─────────────────────┐  │
+                    │  │   🔗 QA Environment │  │
+                    │  │   • api-qa.com      │  │
+                    │  └─────────────────────┘  │
+                    │  ┌─────────────────────┐  │
+                    │  │   🔗 Production     │  │
+                    │  │   • api.com         │  │
+                    │  └─────────────────────┘  │
+                    └─────────────┬─────────────┘
+                                  │
+                    ┌─────────────▼─────────────┐
+                    │      REPORTING LAYER      │
+                    │  ┌─────────────────────┐  │
+                    │  │   📊 HTML Reports   │  │
+                    │  │   • Visual Charts   │  │
+                    │  │   • Request Details │  │
+                    │  │   • Test Results    │  │
+                    │  └─────────────────────┘  │
+                    │  ┌─────────────────────┐  │
+                    │  │   📋 JUnit XML      │  │
+                    │  │   • CI/CD Compatible│  │
+                    │  │   • Jenkins Integration│
+                    │  │   • Test Metrics    │  │
+                    │  └─────────────────────┘  │
+                    │  ┌─────────────────────┐  │
+                    │  │   📝 Console Logs   │  │
+                    │  │   • Real-time Output│  │
+                    │  │   • Debug Info      │  │
+                    │  │   • Error Messages  │  │
+                    │  └─────────────────────┘  │
+                    └─────────────┬─────────────┘
+                                  │
+                    ┌─────────────▼─────────────┐
+                    │      CI/CD PIPELINE       │
+                    │  ┌─────────────────────┐  │
+                    │  │   🏗️ JENKINS        │  │
+                    │  │   • Automated Runs  │  │
+                    │  │   • Environment Mgmt│  │
+                    │  │   • Report Archiving│  │
+                    │  │   • Notifications   │  │
+                    │  └─────────────────────┘  │
+                    │  ┌─────────────────────┐  │
+                    │  │   📧 NOTIFICATIONS  │  │
+                    │  │   • Email Alerts    │  │
+                    │  │   • Slack Messages  │  │
+                    │  │   • Team Updates    │  │
+                    │  └─────────────────────┘  │
+                    └───────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              DATA FLOW DIAGRAM                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   GIT       │───▶│   NEWMAN    │───▶│   API       │───▶│   REPORTS   │
+│ Repository  │    │   CLI       │    │ Endpoints   │    │ Generation  │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+       │                   │                   │                   │
+       ▼                   ▼                   ▼                   ▼
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│ Collections │    │ Environment │    │ HTTP        │    │ HTML        │
+│ • Requests  │    │ Variables   │    │ Requests    │    │ Reports     │
+│ • Tests     │    │ • base_url  │    │ • GET/POST  │    │ • Charts    │
+│ • Scripts   │    │ • auth_token│    │ • PUT/DELETE│    │ • Details   │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+       │                   │                   │                   │
+       ▼                   ▼                   ▼                   ▼
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│ Test Data   │    │ Utility     │    │ Response    │    │ JUnit       │
+│ • JSON      │    │ Functions   │    │ Validation  │    │ XML         │
+│ • CSV       │    │ • Assertions│    │ • Status    │    │ • CI/CD     │
+│ • Iterations│    │ • Logging   │    │ • Headers   │    │ • Metrics   │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              COMPONENT INTERACTIONS                             │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   POSTMAN   │    │   NEWMAN    │    │   JENKINS   │
+│ Collections │◄───┤   CLI       │◄───┤   Pipeline  │
+│ • Design    │    │ • Execute   │    │ • Schedule  │
+│ • Test      │    │ • Report    │    │ • Monitor   │
+│ • Debug     │    │ • Validate  │    │ • Notify    │
+└─────────────┘    └─────────────┘    └─────────────┘
+       │                   │                   │
+       ▼                   ▼                   ▼
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   UTILITIES │    │   REPORTS   │    │   NOTIFY    │
+│ • Assertions│    │ • HTML      │    │ • Email     │
+│ • Data Load │    │ • JUnit     │    │ • Slack     │
+│ • Env Mgmt  │    │ • Console   │    │ • Teams     │
+└─────────────┘    └─────────────┘    └─────────────┘
+```
 
 ---
 
@@ -118,6 +276,10 @@ postman-api-automation-framework/
 │   ├── Jenkinsfile                       # Declarative pipeline definition
 │   └── newman_run.sh                     # Standalone shell script runner
 │
+├── docs/                                  # Documentation files
+│   ├── quick_start.md                    # Quick start guide
+│   └── user_guide.md             # Detailed user guide
+│
 ├── package.json                           # Node.js dependencies
 ├── newman-config.json                     # Newman global configuration
 ├── .gitignore                            # Git ignore rules
@@ -188,27 +350,9 @@ You should see the Newman version (e.g., `6.1.1`)
 
 ## ⚡ Quick Start
 
-### Run Your First Test
+For a quick start guide with step-by-step instructions, see [docs/quick_start.md](docs/quick_start.md).
 
-Execute the user management collection on the dev environment:
-
-```bash
-npm run test:users
-```
-
-This command runs:
-- The `user_management.postman_collection.json` collection
-- Against the `dev.postman_environment.json` environment
-- Using data from `users_data.json`
-- Generates HTML and JUnit reports
-
-### View Reports
-
-Open the generated HTML report:
-
-```bash
-open reports/users-report.html
-```
+For a comprehensive user guide with detailed explanations, see [docs/user_guide.md](docs/user_guide.md).
 
 ---
 
