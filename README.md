@@ -2,7 +2,7 @@
 
 [![Newman](https://img.shields.io/badge/Newman-v6.1.1-orange.svg)](https://www.npmjs.com/package/newman)
 [![Node.js](https://img.shields.io/badge/Node.js-v18+-green.svg)](https://nodejs.org/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](docs/license.md)
 
 > **Enterprise-grade API automation framework** using Postman + Newman with complete CI/CD integration via Jenkins
 
@@ -888,7 +888,7 @@ Contributions are welcome! Please follow these guidelines:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [docs/license.md](docs/license.md) file for details.
 
 ---
 
