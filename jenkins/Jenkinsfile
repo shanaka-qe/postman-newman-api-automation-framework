@@ -18,7 +18,7 @@ pipeline {
     environment {
         // Newman and Node.js configuration
         NODE_VERSION = '18'
-        NEWMAN_VERSION = '6.1.1'
+        NEWMAN_VERSION = '6.2.1'
         
         // Test environment selection (can be overridden via Jenkins parameters)
         TEST_ENV = "${params.ENVIRONMENT ?: 'dev'}"
@@ -35,7 +35,7 @@ pipeline {
         ORDERS_REPORT = "orders-report-${TIMESTAMP}.html"
         
         // Newman command options
-        NEWMAN_OPTIONS = '--color off --disable-unicode --reporters cli,html,junit'
+        NEWMAN_OPTIONS = '--color off --disable-unicode --reporters cli,html,junitfull'
     }
     
     // Define pipeline parameters that can be set when triggering a build
@@ -117,7 +117,7 @@ pipeline {
                     npm --version || echo "npm not found, will install"
                     
                     echo "Installing Newman and reporters..."
-                    npm install newman newman-reporter-html newman-reporter-htmlextra newman-reporter-junit
+                    npm install newman newman-reporter-html newman-reporter-htmlextra newman-reporter-junitfull
                     
                     echo "Verifying Newman installation:"
                     npx newman --version
@@ -157,9 +157,9 @@ pipeline {
                                 -e ${envFile} \\
                                 -d ${DATA_PATH}/users_data.json \\
                                 --iteration-count 3 \\
-                                -r cli,html,junit \\
+                                -r cli,html,junitfull \\
                                 --reporter-html-export ${REPORTS_PATH}/${USERS_REPORT} \\
-                                --reporter-junit-export ${REPORTS_PATH}/users-junit.xml \\
+                                --reporter-junitfull-export ${REPORTS_PATH}/users-junit.xml \\
                                 --bail || echo "Some user tests failed"
                         """
                     }
@@ -171,9 +171,9 @@ pipeline {
                                 -e ${envFile} \\
                                 -d ${DATA_PATH}/orders_data.csv \\
                                 --iteration-count 3 \\
-                                -r cli,html,junit \\
+                                -r cli,html,junitfull \\
                                 --reporter-html-export ${REPORTS_PATH}/${ORDERS_REPORT} \\
-                                --reporter-junit-export ${REPORTS_PATH}/orders-junit.xml \\
+                                --reporter-junitfull-export ${REPORTS_PATH}/orders-junit.xml \\
                                 --bail || echo "Some order tests failed"
                         """
                     }

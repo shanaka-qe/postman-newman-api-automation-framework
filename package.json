@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "newman run collections/user_management.postman_collection.json -e environments/dev.postman_environment.json",
-    "test:users": "newman run collections/user_management.postman_collection.json -e environments/dev.postman_environment.json -d data/users_data.json -r cli,html,junit --reporter-html-export reports/users-report.html --reporter-junit-export reports/users-junit.xml",
-    "test:orders": "newman run collections/orders_api.postman_collection.json -e environments/dev.postman_environment.json -d data/orders_data.csv -r cli,html,junit --reporter-html-export reports/orders-report.html --reporter-junit-export reports/orders-junit.xml",
+    "test:users": "newman run collections/user_management.postman_collection.json -e environments/dev.postman_environment.json -d data/users_data.json -r cli,html,junitfull --reporter-html-export reports/users-report.html --reporter-junitfull-export reports/users-junit.xml",
+    "test:orders": "newman run collections/orders_api.postman_collection.json -e environments/dev.postman_environment.json -d data/orders_data.csv -r cli,html,junitfull --reporter-html-export reports/orders-report.html --reporter-junitfull-export reports/orders-junit.xml",
     "test:all": "npm run test:users && npm run test:orders",
     "test:dev": "newman run collections/user_management.postman_collection.json -e environments/dev.postman_environment.json -r cli,html",
     "test:qa": "newman run collections/user_management.postman_collection.json -e environments/qa.postman_environment.json -r cli,html",
@@ -30,7 +30,7 @@
     "newman-reporter-junitfull": "^1.1.1"
   },
   "engines": {
-    "node": ">=14.0.0",
+    "node": ">=18.0.0",
     "npm": ">=6.0.0"
   }
 }
