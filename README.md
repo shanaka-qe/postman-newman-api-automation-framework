@@ -1,6 +1,6 @@
 # 🧩 Postman-Newman API Automation Framework
 
-[![Newman](https://img.shields.io/badge/Newman-v6.1.1-orange.svg)](https://www.npmjs.com/package/newman)
+[![Newman](https://img.shields.io/badge/Newman-v6.2.1-orange.svg)](https://www.npmjs.com/package/newman)
 [![Node.js](https://img.shields.io/badge/Node.js-v18+-green.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](docs/license.md)
 
@@ -233,7 +233,7 @@ This framework provides a **production-ready, scalable solution** for API test a
 | Component | Purpose | Version |
 |-----------|---------|---------|
 | **Postman** | API design & test scripting | Latest |
-| **Newman** | CLI test execution | 6.1.1 |
+| **Newman** | CLI test execution | 6.2.1 |
 | **Node.js** | Runtime environment | 18+ |
 | **npm** | Package management | 6+ |
 | **Jenkins** | CI/CD automation | 2.x |
@@ -321,8 +321,8 @@ Before you begin, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/<your-username>/postman-api-automation-framework.git
-cd postman-api-automation-framework
+git clone https://github.com/shanaka-qe/postman-newman-api-automation-framework.git
+cd postman-newman-api-automation-framework
 ```
 
 ### 2. Install Dependencies
@@ -335,8 +335,7 @@ This will install:
 - `newman` - Newman CLI test runner
 - `newman-reporter-html` - HTML report generator
 - `newman-reporter-htmlextra` - Enhanced HTML reports
-- `newman-reporter-junit` - JUnit XML reports
-- `newman-reporter-allure` - Allure report integration (optional)
+- `newman-reporter-junitfull` - JUnit XML reports (`junitfull` reporter)
 
 ### 3. Verify Installation
 
@@ -344,7 +343,7 @@ This will install:
 npx newman --version
 ```
 
-You should see the Newman version (e.g., `6.1.1`)
+You should see the Newman version (e.g., `6.2.1`)
 
 ---
 
@@ -390,9 +389,9 @@ newman run collections/user_management.postman_collection.json \
 newman run collections/user_management.postman_collection.json \
   -e environments/dev.postman_environment.json \
   -d data/users_data.json \
-  -r cli,html,junit \
+  -r cli,html,junitfull \
   --reporter-html-export reports/test-report.html \
-  --reporter-junit-export reports/test-results.xml
+  --reporter-junitfull-export reports/test-results.xml
 
 # With iterations (data-driven testing)
 newman run collections/orders_api.postman_collection.json \
@@ -569,7 +568,7 @@ Generated reports include:
 2. **Configure SCM:**
    - Pipeline → Definition: "Pipeline script from SCM"
    - SCM: Git
-   - Repository URL: `https://github.com/<your-username>/postman-api-automation-framework.git`
+   - Repository URL: `https://github.com/shanaka-qe/postman-newman-api-automation-framework.git`
    - Script Path: `jenkins/Jenkinsfile`
 
 3. **Configure Build Triggers:**
@@ -894,7 +893,7 @@ This project is licensed under the MIT License - see the [docs/license.md](docs/
 
 ## 👥 Authors
 
-- **Your Name** - Initial work
+- **Shanaka Fernando** - Initial work
 
 ---
 
@@ -908,7 +907,7 @@ This project is licensed under the MIT License - see the [docs/license.md](docs/
 
 ## 📞 Support
 
-For support, email your-email@example.com or open an issue in the GitHub repository.
+For support, open an issue at https://github.com/shanaka-qe/postman-newman-api-automation-framework/issues
 
 ---
 
@@ -916,7 +915,7 @@ For support, email your-email@example.com or open an issue in the GitHub reposit
 
 **[⬆ back to top](#-postman-newman-api-automation-framework)**
 
-Made with ❤️ by the QA Team
+Made with ❤️ by Shanaka Fernando
 
 </div>
 
