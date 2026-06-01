@@ -7,8 +7,8 @@ Get up and running with the Postman API Automation Framework in 5 minutes!
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/<your-username>/postman-api-automation-framework.git
-cd postman-api-automation-framework
+git clone https://github.com/shanaka-qe/postman-newman-api-automation-framework.git
+cd postman-newman-api-automation-framework
 ```
 
 ### Step 2: Install Dependencies
@@ -328,7 +328,7 @@ Never commit credentials; use environment variables or Jenkins secrets.
 
 1. Check the [README.md](README.md) for detailed documentation
 2. Review [Troubleshooting](README.md#troubleshooting) section
-3. Search existing [GitHub Issues](https://github.com/<your-username>/postman-api-automation-framework/issues)
+3. Search existing [GitHub Issues](https://github.com/shanaka-qe/postman-newman-api-automation-framework/issues)
 4. Open a new issue with details
 
 ---

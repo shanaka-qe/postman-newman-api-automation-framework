@@ -55,7 +55,7 @@ OPTIONS:
     -e, --environment   Environment name (dev/qa/prod) - default: dev
     -d, --data          Data file name (optional)
     -i, --iterations    Number of iterations - default: 1
-    -r, --reporters     Reporters (comma-separated) - default: cli,html,junit
+    -r, --reporters     Reporters (comma-separated) - default: cli,html,junitfull
     -h, --help          Display this help message
 
 EXAMPLES:
@@ -94,7 +94,7 @@ check_dependencies() {
     # Check if Newman is installed
     if ! command -v newman &> /dev/null && ! npx newman --version &> /dev/null; then
         print_warning "Newman not found. Installing Newman..."
-        npm install -g newman newman-reporter-html newman-reporter-junit
+        npm install -g newman newman-reporter-html newman-reporter-junitfull
     fi
     print_success "Newman found: $(npx newman --version || newman --version)"
 }
@@ -173,7 +173,7 @@ build_newman_command() {
     
     # Add report output paths
     NEWMAN_CMD="${NEWMAN_CMD} --reporter-html-export \"${RUN_REPORTS_DIR}/report.html\""
-    NEWMAN_CMD="${NEWMAN_CMD} --reporter-junit-export \"${RUN_REPORTS_DIR}/report.xml\""
+    NEWMAN_CMD="${NEWMAN_CMD} --reporter-junitfull-export \"${RUN_REPORTS_DIR}/report.xml\""
     
     # Add additional Newman options
     NEWMAN_CMD="${NEWMAN_CMD} --color off"
@@ -263,7 +263,7 @@ display_summary() {
 ENVIRONMENT="dev"
 DATA_FILE=""
 ITERATIONS=1
-REPORTERS="cli,html,junit"
+REPORTERS="cli,html,junitfull"
 COLLECTION_FILE=""
 TEST_RESULT=0
 

@@ -51,10 +51,10 @@ Before you begin, ensure you have the following installed:
 cd /path/to/your/projects
 
 # Clone the repository
-git clone https://github.com/<your-username>/postman-api-automation-framework.git
+git clone https://github.com/shanaka-qe/postman-newman-api-automation-framework.git
 
 # Navigate into the project
-cd postman-api-automation-framework
+cd postman-newman-api-automation-framework
 ```
 
 #### Step 2: Install Dependencies
@@ -68,7 +68,7 @@ This will install:
 - `newman` - The CLI test runner
 - `newman-reporter-html` - HTML report generator
 - `newman-reporter-htmlextra` - Enhanced HTML reports
-- `newman-reporter-junit` - JUnit XML reports
+- `newman-reporter-junitfull` - JUnit XML reports
 
 #### Step 3: Verify Installation
 
@@ -76,7 +76,7 @@ This will install:
 # Check if Newman is installed
 npx newman --version
 
-# You should see something like: 6.1.1
+# You should see something like: 6.2.1
 ```
 
 ---
@@ -251,7 +251,7 @@ Add to `package.json`:
 ```json
 {
   "scripts": {
-    "test:myapi": "newman run collections/my_api.postman_collection.json -e environments/dev.postman_environment.json -r cli,html,junit --reporter-html-export reports/myapi-report.html"
+    "test:myapi": "newman run collections/my_api.postman_collection.json -e environments/dev.postman_environment.json -r cli,html,junitfull --reporter-html-export reports/myapi-report.html"
   }
 }
 ```
@@ -987,7 +987,7 @@ cat data/users_data.json | jq .
 
 #### Community
 - [Postman Community](https://community.postman.com/)
-- [GitHub Issues](https://github.com/<your-username>/postman-api-automation-framework/issues)
+- [GitHub Issues](https://github.com/shanaka-qe/postman-newman-api-automation-framework/issues)
 - [Stack Overflow](https://stackoverflow.com/questions/tagged/newman)
 
 ---
@@ -1022,9 +1022,9 @@ We welcome your feedback to improve this framework:
 
 ### Contact Information
 
-- **GitHub**: [Your Repository](https://github.com/<your-username>/postman-api-automation-framework)
-- **Issues**: [GitHub Issues](https://github.com/<your-username>/postman-api-automation-framework/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/<your-username>/postman-api-automation-framework/discussions)
+- **GitHub**: [Your Repository](https://github.com/shanaka-qe/postman-newman-api-automation-framework)
+- **Issues**: [GitHub Issues](https://github.com/shanaka-qe/postman-newman-api-automation-framework/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/shanaka-qe/postman-newman-api-automation-framework/discussions)
 
 ---
 
@@ -1061,4 +1061,4 @@ Before you start using the framework in production:
 
 ---
 
-*This guide is part of the Postman-Newman API Automation Framework. For the latest updates and additional resources, visit the [main repository](https://github.com/<your-username>/postman-api-automation-framework).*
+*This guide is part of the Postman-Newman API Automation Framework. For the latest updates and additional resources, visit the [main repository](https://github.com/shanaka-qe/postman-newman-api-automation-framework).*

@@ -389,7 +389,7 @@ newman run collections/user_management.postman_collection.json \
 newman run collections/user_management.postman_collection.json \
   -e environments/dev.postman_environment.json \
   -d data/users_data.json \
-  -r cli,html,junitfull \
+  -r cli,html,junitfullfull \
   --reporter-html-export reports/test-report.html \
   --reporter-junitfull-export reports/test-results.xml
 
@@ -605,7 +605,7 @@ java -jar jenkins-cli.jar -s http://jenkins-url/ build 'API-Tests' \
   -e qa \
   -d users_data.json \
   -i 3 \
-  -r cli,html,junit
+  -r cli,html,junitfull
 ```
 
 ---
